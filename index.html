@@ -56,7 +56,8 @@ var width = 880,
 	legendY = 400,
 	palette = ["rgb(241,238,246)","rgb(189,201,225)","rgb(116,169,207)","rgb(5,112,176)"],
 	dataset = [];
-	
+
+//title box
 var svgText = d3.select("#svgText")
 	.selectAll("svg");
 svgText.append("text")
@@ -71,6 +72,7 @@ var svg = d3.select("#svgMap")
 	
 var svgCheckboxList = d3.select("#svgCheckboxList")
 	.selectAll("svg");
+	
 //set the parameters for the geographic projection
 var projection = d3.geo.mercator()
 	.scale(scale)
@@ -146,6 +148,29 @@ svg.append("text")
 	.attr("font-size", 14)
 	.text("76-100")
 	
+//add list boding lines
+svgCheckboxList.append("text")
+	.attr("x", 15)
+	.attr("y", 38)
+	.text("Select a drug");
+svgCheckboxList.append("line")
+	.attr("x1", 15)
+	.attr("x2", 185)
+	.attr("y1", 42)
+	.attr("y2", 42)
+	.style("stroke", "black");
+svgCheckboxList.append("text")
+	.attr("x", 15)
+	.attr("y", 198)
+	.text("Select a consumption level");
+svgCheckboxList.append("line")
+	.attr("x1", 15)
+	.attr("x2", 185)
+	.attr("y1", 202)
+	.attr("y2", 202)
+	.style("stroke", "black");
+
+//load the geographic data
 d3.json("neighbourhoods.json", function(error, topology) {
 	svg.selectAll("path")
 		.data(topology.features)
@@ -172,8 +197,10 @@ d3.json("neighbourhoods.json", function(error, topology) {
 
 //Set parameters to use for creating the checkboxes
 var drugs = ["Cocaine","Heroine","Meth","Crack","Stimulants","Prescriptions"];
+var levels = ["Low","Medium","High"];
 var checkboxHeight = 40;
-var selectedCheckBox = "none"
+var selectedCheckBox = "none";
+var selectedLevelCheckBox = "High";
 
 //Creates checkboxes and handles the on click events / data updates
 for (i = 0; i < drugs.length; i++) {
@@ -192,7 +219,7 @@ for (i = 0; i < drugs.length; i++) {
 				if (drugs[j] != selectedCheckBox) { document.getElementById("check_"+drugs[j]).checked = false; }
 			}
 			//update data to new drug
-			update(selectedCheckBox);
+			update();
 		})
 		.append("xhtml:body")
 		.html(htmlText);
@@ -207,13 +234,52 @@ for (i = 0; i < drugs.length; i++) {
 	checkboxHeight = checkboxHeight + 20;
 }	
 
+checkboxHeight = 200;
+//Creates checkboxes and handles the on click events / data updates for levels
+for (i = 0; i < levels.length; i++) {
+	//add checkboxes for drugs
+	var htmlText = "<form><input type=checkbox id=check_" + levels[i] +  " /></form>";
+	var checkBox = svgCheckboxList.append("foreignObject")
+		.attr("x", 15)
+		.attr("y", checkboxHeight)
+		.attr("level", levels[i])
+		.attr("width", 100)
+		.attr("height", 100)
+		.on("click", function(d, i){
+			//marks current selection and unchecks all other boxes
+			selectedLevelCheckBox = this.getAttribute("level");
+			for (j = 0; j < levels.length; j++) {				
+				if (levels[j] != selectedLevelCheckBox) { document.getElementById("check_"+levels[j]).checked = false; }
+			}
+			//update data to new level
+			update();
+		})
+		.append("xhtml:body")
+		.html(htmlText);
+		
+	svgCheckboxList.append("text")
+		.attr("x", 50)
+		.attr("y", checkboxHeight+21.5)
+		.attr("font-size",12)
+		.attr("fill","black")
+		.text(levels[i]);
+
+	checkboxHeight = checkboxHeight + 20;
+}	
+//set High as default
+document.getElementById("check_High").checked = true;	
+	
 //import datasets and assign attributes as needed
 function loadData() {
 	data = "data.csv";
 	d3.csv(data, function(d) {
 		return { areaName: d.area, id: d.id,
-			Cocaine: +d.cocaine, Crack: +d.crack, Heroine: +d.heroine, 
-			Prescriptions: +d.prescriptions, Stimulants: +d.stimulants, Meth: +d.meth};
+			Cocaine_Low: +d.cocaine_low, Crack_Low: +d.crack_low, Heroine_Low: +d.heroine_low, 
+			Prescriptions_Low: +d.prescriptions_low, Stimulants_Low: +d.stimulants_low, Meth_Low: +d.meth_low,
+			Cocaine_High: +d.cocaine_high, Crack_High: +d.crack_high, Heroine_High: +d.heroine_high, 
+			Prescriptions_High: +d.prescriptions_high, Stimulants_High: +d.stimulants_high, Meth_High: +d.meth_high,
+			Cocaine_Medium: +d.cocaine_medium, Crack_Medium: +d.crack_medium, Heroine_Medium: +d.heroine_medium, 
+			Prescriptions_Medium: +d.prescriptions_medium, Stimulants_Medium: +d.stimulants_medium, Meth_Medium: +d.meth_medium };
 	}, function(error, rows) {
 		dataset = rows;
 	});
@@ -224,10 +290,9 @@ loadData();
 
 //repaint the map with the selected colour
 function update() {
-	console.log(dataset);
 	//set scale to use in colouring -- has to be sorted for appropriate quantile distribution
 	var scaleValues = [];
-	d3.selectAll(dataset).each(function(p,i) {scaleValues[i] = dataset[i][selectedCheckBox]});
+	d3.selectAll(dataset).each(function(p,i) {scaleValues[i] = dataset[i][selectedCheckBox+"_"+selectedLevelCheckBox]});
 	scaleValues.sort(sortNumber);
 
 	var color = d3.scale.quantile()
@@ -239,7 +304,7 @@ function update() {
 		var myId = "#"+ [d.id];
 		svg.select(myId)
 			.transition().duration(1000)
-			.style("fill", palette[color(d[selectedCheckBox])]);
+			.style("fill", palette[color(d[selectedCheckBox+"_"+selectedLevelCheckBox])]);
 	});
 };
 
