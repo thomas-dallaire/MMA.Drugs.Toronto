@@ -165,7 +165,7 @@ d3.json("neighbourhoods.json", function(error, topology) {
 				var cityLabel = svg.append("text")
 					.attr("id", "cityLabel")
 					.attr("x", (d3.event.pageX) + "px")
-					.attr("y", (d3.event.pageY-10) + "px")
+					.attr("y", (d3.event.pageY-15) + "px")
 					.attr("font-size",16)
 					.attr("fill","black")
 					.text(d.properties.AREA_NAME);
