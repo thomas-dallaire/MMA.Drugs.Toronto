@@ -13,28 +13,21 @@ path {
 	stroke-width: 0.2px;
 	stroke-linejoin: round;
 }
-.containerText {
-    height: 100px;
-    width: 880px;
-	position: absolute;
-}
 .container {
     height: 508px;
     width: 880px;
 	border-radius: 15px;
     border:1px solid #ccc;
 	position: absolute;
-	top: 100px;
 }
 .containerCheckList {
-    height: 550px;
+    height: 508px;
     width: 200px;
 	border-radius: 15px;
     border:1px solid #ccc;
     overflow-y: hidden;
     overflow-x: hidden;
 	position: absolute;
-	top: 57px;
 	left: 900px;
 }
 </style>
@@ -44,7 +37,6 @@ path {
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script src="http://d3js.org/topojson.v1.min.js"></script>
 
-<div class=containerText id="svgText"> <svg width=880px height=100></svg> </div>
 <div class=container id="svgMap"> <svg width=880px height=500px></svg> </div>
 <div class=containerCheckList id="svgCheckboxList"> <svg width=200px height=550px></svg> </div>
 
@@ -56,16 +48,6 @@ var width = 880,
 	legendY = 400,
 	palette = ["rgb(241,238,246)","rgb(189,201,225)","rgb(116,169,207)","rgb(5,112,176)"],
 	dataset = [];
-
-//title box
-var svgText = d3.select("#svgText")
-	.selectAll("svg");
-svgText.append("text")
-	.attr("x",10)
-	.attr("y",82)
-	.text("Probability distribution of drug use in Toronto")
-	.attr("font-size",35)
-	.attr("fill","black");
 	
 var svg = d3.select("#svgMap")
 	.selectAll("svg");
